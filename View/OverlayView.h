@@ -15,9 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) ModuleControl *moduleControl;
 
-@property (nonatomic, strong) mi *mi;
+// HATA ÇÖZÜMÜ: 'mi' sınıfı yerine genel bir UIView kullanıyoruz.
+// Çünkü FloatView bir UIView'dir ve 'mi' sınıfı projede yoktur.
+@property (nonatomic, strong) UIView *mi;
 
-- (instancetype)initWithFrame:(CGRect)frame :(ModuleControl*)control :(mi*)menu;
+// HATA ÇÖZÜMÜ: Parametre tipi 'mi*' yerine 'UIView*' olarak değiştirildi.
+- (instancetype)initWithFrame:(CGRect)frame :(ModuleControl*)control :(UIView*)menu;
 
 @end
 
