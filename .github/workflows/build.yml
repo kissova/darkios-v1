@@ -3,7 +3,7 @@ name: Build M7MD Dylib
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # Manuel çalıştırma butonu
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
           echo "THEOS=$THEOS" >> $GITHUB_ENV
           echo "$THEOS/bin" >> $GITHUB_PATH
 
-      - name: Install ldid (İmzalama Aracı)
+      - name: Install ldid
         run: |
           curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_arm64
           chmod +x ldid_macosx_arm64
@@ -31,10 +31,17 @@ jobs:
           make clean || true
           make all
 
-      - name: Find and Upload Dylib (Zip olarak)
+      # HATA ÇÖZÜMÜ: Dylib dosyasını derleme sonrası bulup tek bir klasöre kopyalıyoruz
+      - name: Prepare Dylib for Upload
+        run: |
+          mkdir -p output
+          # Theos'un dylib'i bıraktığı tüm olası yolları kontrol et ve output klasörüne kopyala
+          find .theos/obj -name "*.dylib" -exec cp {} output/ \;
+
+      - name: Upload Dylib as Zip
         uses: actions/upload-artifact@v4
         with:
           name: M7MD-Dylib-Zip
-          # Derlenen dylib dosyasının yolunu belirtiyoruz
-          path: .theos/obj/arm64/M7MD.dylib
+          # Artık doğrudan oluşturduğumuz output klasörünü yüklüyoruz
+          path: output/
           if-no-files-found: error
