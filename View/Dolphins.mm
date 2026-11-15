@@ -23,16 +23,35 @@ ModuleControl moduleControl;
 static void didFinishLaunching(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
-        // 1. Önce FloatView (Küçük Yüzen Buton) oluşturulur
+        // HATA ÇÖZÜMÜ: iOS 15+ için keyWindow yerine aktif UIWindowScene'i buluyoruz
+        UIWindow *keyWindow = nil;
+        if (@available(iOS 13.0, *)) {
+            for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+                if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
+                    keyWindow = ((UIWindowScene *)scene).windows.firstObject;
+                    break;
+                }
+            }
+        } else {
+            keyWindow = [UIApplication sharedApplication].keyWindow;
+        }
+
+        if (!keyWindow) {
+            NSLog(@"[M7MD] HATA: keyWindow bulunamadi!");
+            return;
+        }
+
+        NSLog(@"[M7MD] keyWindow bulundu, arayüz ekleniyor...");
+
+        // 1. FloatView (Küçük Yüzen Buton)
         FloatView* floatView = [[FloatView alloc] initWithFrame:CGRectMake(489, 58, 45, 45):&moduleControl];
-        [[UIApplication sharedApplication].keyWindow addSubview:floatView];
+        [keyWindow addSubview:floatView];
         
-        // 2. Sonra OverlayView (Menü) oluşturulur ve FloatView ile bağlantı kurulur
-        // Not: OverlayView init metodu 3 parametre alıyorsa bu satır doğrudur.
+        // 2. OverlayView (Menü)
         OverlayView* overlayView = [[OverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds :&moduleControl :floatView];
-        [[UIApplication sharedApplication].keyWindow addSubview:overlayView];
+        [keyWindow addSubview:overlayView];
         
-        NSLog(@"[M7MD] FloatView ve OverlayView basariyla eklendi.");
+        NSLog(@"[M7MD] Arayüz başarıyla eklendi.");
     });
 }
 
