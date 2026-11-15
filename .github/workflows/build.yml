@@ -1,53 +1,40 @@
-name: Build Dylib
+name: Build M7MD Dylib
 
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: 
+  workflow_dispatch: # Manuel çalıştırma butonu
 
 jobs:
   build:
     runs-on: macos-latest
-    permissions:
-      contents: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup Theos and Tools
-      run: |
-        export THEOS=$HOME/theos
-        if [ ! -d "$THEOS" ]; then
+      - name: Install Theos
+        run: |
+          export THEOS=$HOME/theos
           git clone --recursive https://github.com/theos/theos.git $THEOS
-        fi
-        echo "THEOS=$THEOS" >> $GITHUB_ENV
-        
-        curl -L -o /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/latest/download/ldid_macosx_arm64
-        sudo chmod +x /usr/local/bin/ldid
-        ldid -v || true
+          echo "THEOS=$THEOS" >> $GITHUB_ENV
+          echo "$THEOS/bin" >> $GITHUB_PATH
 
-    - name: Download iOS SDK
-      run: |
-        if [ ! -d "$THEOS/sdks" ]; then
-          git clone --depth 1 https://github.com/theos/sdks.git $THEOS/sdks
-        fi
+      - name: Install ldid (İmzalama Aracı)
+        run: |
+          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_arm64
+          chmod +x ldid_macosx_arm64
+          mv ldid_macosx_arm64 $THEOS/bin/ldid
 
-    - name: Compile Tweak
-      run: |
-        make clean || true
-        make package FINALPACKAGE=1
+      - name: Build Tweak
+        run: |
+          make clean || true
+          make all
 
-    - name: Find and Copy Dylib to Root
-      run: |
-        # .dylib faylını tapıb əsas qovluğa çıxarırıq
-        find . -name "*.dylib" -exec cp {} ./M7MD.dylib \;
-        ls -la M7MD.dylib
-
-    - name: Commit and Push Dylib
-      run: |
-        git config --global user.name 'GitHub Action'
-        git config --global user.email 'action@github.com'
-        git add -f M7MD.dylib
-        git commit -m "Auto-build: Added M7MD.dylib" || true
-        git push
+      - name: Find and Upload Dylib (Zip olarak)
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7MD-Dylib-Zip
+          # Derlenen dylib dosyasının yolunu belirtiyoruz
+          path: .theos/obj/arm64/M7MD.dylib
+          if-no-files-found: error
