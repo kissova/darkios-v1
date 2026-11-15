@@ -33,23 +33,19 @@ jobs:
           make all
           make package FINALPACKAGE=1
 
-      # Dosyaları tek bir klasörde toplama
-      - name: Prepare Files for Upload
+      # Dosyaları packages klasörüne taşı
+      - name: Move Files to Packages Folder
         run: |
-          mkdir -p M7MD_Output
-          # Dylib dosyasını bul ve kopyala
-          find .theos/obj -name "*.dylib" -exec cp {} M7MD_Output/ \;
-          # Deb dosyasını bul ve kopyala
-          find packages -name "*.deb" -exec cp {} M7MD_Output/ \;
-          
-          # Klasörün içini listele (kontrol amaçlı)
-          echo "Klasör içeriği:"
-          ls -la M7MD_Output/
+          mkdir -p packages
+          # Dylib dosyasını bul ve packages klasörüne kopyala
+          find .theos/obj -name "*.dylib" -exec cp {} packages/ \;
+          # Deb dosyasını bul ve packages klasörüne kopyala
+          find . -name "*.deb" -exec cp {} packages/ \;
 
-      # Klasörü tek bir artifact olarak yükleme
-      - name: Upload Output Folder
-        uses: actions/upload-artifact@v4
+      # Değişiklikleri GitHub'a geri gönder
+      - name: Commit and Push Files
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: M7MD_Files
-          path: M7MD_Output/
-          if-no-files-found: error
+          commit_message: "Otomatik derleme: Dylib ve Deb dosyaları packages klasörüne eklendi."
+          file_pattern: 'packages/*'
+          branch: main
