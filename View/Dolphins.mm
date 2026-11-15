@@ -23,18 +23,20 @@ ModuleControl moduleControl;
 static void didFinishLaunching(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
-        // HATA ÇÖZÜMÜ: 'mi' sınıfı yerine doğrudan OverlayView kullanıyoruz.
-        // OverlayView'i başlat (Menü ve çizim katmanı)
-        OverlayView* overlayView = [[OverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds:&moduleControl:nil];
-        [[UIApplication sharedApplication].keyWindow addSubview:overlayView];
-        
-        // Küçük yüzen butonu (FloatView) başlat
+        // 1. Önce FloatView (Küçük Yüzen Buton) oluşturulur
         FloatView* floatView = [[FloatView alloc] initWithFrame:CGRectMake(489, 58, 45, 45):&moduleControl];
         [[UIApplication sharedApplication].keyWindow addSubview:floatView];
+        
+        // 2. Sonra OverlayView (Menü) oluşturulur ve FloatView ile bağlantı kurulur
+        // Not: OverlayView init metodu 3 parametre alıyorsa bu satır doğrudur.
+        OverlayView* overlayView = [[OverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds :&moduleControl :floatView];
+        [[UIApplication sharedApplication].keyWindow addSubview:overlayView];
+        
+        NSLog(@"[M7MD] FloatView ve OverlayView basariyla eklendi.");
     });
 }
 
-// Kütüphane Giriş Fonksiyonu (Constructor)
+// Kütüphane Giriş Fonksiyonu
 __attribute__((constructor)) static void initialize() {
     // Uygulama başladığında didFinishLaunching fonksiyonunu çağır
     CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), NULL, &didFinishLaunching, (CFStringRef)UIApplicationDidFinishLaunchingNotification, NULL, CFNotificationSuspensionBehaviorDrop);
