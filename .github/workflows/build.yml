@@ -1,4 +1,4 @@
-name: Build M7MD Dylib
+name: Build M7MD Dylib and Deb
 
 on:
   push:
@@ -26,22 +26,26 @@ jobs:
           chmod +x ldid_macosx_arm64
           mv ldid_macosx_arm64 $THEOS/bin/ldid
 
-      - name: Build Tweak
+      # Derleme işlemi (Hem Dylib hem Deb için)
+      - name: Build Tweak and Package
         run: |
           make clean || true
           make all
+          make package FINALPACKAGE=1
 
-      # HATA ÇÖZÜMÜ: Dylib dosyasını derleme sonrası bulup tek bir klasöre kopyalıyoruz
-      - name: Prepare Dylib for Upload
+      # Dosyaları tek bir klasörde toplama
+      - name: Prepare Files for Upload
         run: |
           mkdir -p output
-          # Theos'un dylib'i bıraktığı tüm olası yolları kontrol et ve output klasörüne kopyala
+          # Dylib dosyasını bul ve kopyala
           find .theos/obj -name "*.dylib" -exec cp {} output/ \;
+          # Deb dosyasını bul ve kopyala
+          find packages -name "*.deb" -exec cp {} output/ \;
 
-      - name: Upload Dylib as Zip
+      # İkisini tek bir zip içinde yükleme
+      - name: Upload Dylib and Deb as Zip
         uses: actions/upload-artifact@v4
         with:
-          name: M7MD-Dylib-Zip
-          # Artık doğrudan oluşturduğumuz output klasörünü yüklüyoruz
+          name: M7MD-Files-Zip
           path: output/
           if-no-files-found: error
