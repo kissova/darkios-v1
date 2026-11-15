@@ -36,16 +36,20 @@ jobs:
       # Dosyaları tek bir klasörde toplama
       - name: Prepare Files for Upload
         run: |
-          mkdir -p output
+          mkdir -p M7MD_Output
           # Dylib dosyasını bul ve kopyala
-          find .theos/obj -name "*.dylib" -exec cp {} output/ \;
+          find .theos/obj -name "*.dylib" -exec cp {} M7MD_Output/ \;
           # Deb dosyasını bul ve kopyala
-          find packages -name "*.deb" -exec cp {} output/ \;
+          find packages -name "*.deb" -exec cp {} M7MD_Output/ \;
+          
+          # Klasörün içini listele (kontrol amaçlı)
+          echo "Klasör içeriği:"
+          ls -la M7MD_Output/
 
-      # İkisini tek bir zip içinde yükleme
-      - name: Upload Dylib and Deb as Zip
+      # Klasörü tek bir artifact olarak yükleme
+      - name: Upload Output Folder
         uses: actions/upload-artifact@v4
         with:
-          name: M7MD-Files-Zip
-          path: output/
+          name: M7MD_Files
+          path: M7MD_Output/
           if-no-files-found: error
