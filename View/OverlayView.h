@@ -6,7 +6,6 @@
 #include "../utils/module_tools.h"
 #include "../utils/imgui_tools.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface OverlayView : MTKView <MTKViewDelegate>
@@ -15,11 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) ModuleControl *moduleControl;
 
-// HATA ÇÖZÜMÜ: 'mi' sınıfı yerine genel bir UIView kullanıyoruz.
-// Çünkü FloatView bir UIView'dir ve 'mi' sınıfı projede yoktur.
+// 'mi' sınıfı yerine, FloatView'in de bir alt sınıfı olduğu UIView kullanılıyor.
 @property (nonatomic, strong) UIView *mi;
 
-// HATA ÇÖZÜMÜ: Parametre tipi 'mi*' yerine 'UIView*' olarak değiştirildi.
+// Başlatma metodu: Menü (FloatView) parametresi UIView olarak alınıyor.
 - (instancetype)initWithFrame:(CGRect)frame :(ModuleControl*)control :(UIView*)menu;
 
 @end
