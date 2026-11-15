@@ -19,11 +19,11 @@ typedef long kaddr;
 // Modül Fonksiyon Kontrolcüsü
 ModuleControl moduleControl;
 
-// UI Giriş Fonksiyonu
+// UI Giriş Fonksiyonu (TEST KODU)
 static void didFinishLaunching(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
-        // HATA ÇÖZÜMÜ: iOS 15+ için keyWindow yerine aktif UIWindowScene'i buluyoruz
+        // 1. iOS 15+ için doğru pencereyi (UIWindowScene) bulma
         UIWindow *keyWindow = nil;
         if (@available(iOS 13.0, *)) {
             for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
@@ -41,17 +41,15 @@ static void didFinishLaunching(CFNotificationCenterRef center, void *observer, C
             return;
         }
 
-        NSLog(@"[M7MD] keyWindow bulundu, arayüz ekleniyor...");
+        NSLog(@"[M7MD] keyWindow bulundu, TEST KARESI ekleniyor...");
 
-        // 1. FloatView (Küçük Yüzen Buton)
-        FloatView* floatView = [[FloatView alloc] initWithFrame:CGRectMake(489, 58, 45, 45):&moduleControl];
-        [keyWindow addSubview:floatView];
+        // 2. TEST: Ekrana kırmızı bir kare ekle
+        UIView *testView = [[UIView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)];
+        testView.backgroundColor = [UIColor redColor];
+        testView.alpha = 0.8; // Yarı saydam
+        [keyWindow addSubview:testView];
         
-        // 2. OverlayView (Menü)
-        OverlayView* overlayView = [[OverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds :&moduleControl :floatView];
-        [keyWindow addSubview:overlayView];
-        
-        NSLog(@"[M7MD] Arayüz başarıyla eklendi.");
+        NSLog(@"[M7MD] TEST KARESI EKLENDI.");
     });
 }
 
