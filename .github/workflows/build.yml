@@ -18,8 +18,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang make dpkg git curl unzip
           
-          # ldid alətini Procursus rəsmi relizindən yükləyib quraşdırırıq
-          sudo wget -O /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid-linux-amd64
+          # ldid alətini birbaşa rəsmi ən son buraxılışdan yükləyirik
+          sudo wget -O /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/latest/download/ldid
           sudo chmod +x /usr/local/bin/ldid
           
           if [ -d "/opt/theos" ]; then
