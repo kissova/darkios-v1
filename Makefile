@@ -6,7 +6,7 @@ THEOS_PACKAGE_SCHEME = rootless
 
 STRIP = strip
 
-include $(THEOS)/makefiles/common.nk
+include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = M7MD
 
@@ -20,7 +20,7 @@ M7MD_LIBRARIES = c++ objc z
 M7MD_CCFLAGS = -w -std=gnu++14 -fno-rtti -fno-exceptions -DNDEBUG -Wno-module-import-in-extern-c
 M7MD_CFLAGS = -w -fobjc-arc -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-value -I/opt/theos/include
 
-# Framework, kitabxana yolları və linker bayraqları (-fuse-ld=lld silindi)
+# Framework, kitabxana yolları və linker bayraqları
 M7MD_LDFLAGS += -F$(THEOS_PROJECT_DIR) -framework JRMemory -L$(THEOS_PROJECT_DIR)/API -lAPIClient
 
 # Faylların siyahısı
