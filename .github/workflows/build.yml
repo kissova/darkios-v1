@@ -1,56 +1,64 @@
-name: Build Tweak
+name: Build M7MD Dylib and Deb
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # HATA ÇÖZÜMÜ: macOS ortamında derleme yapılması zorunludur
+    runs-on: macos-latest
+
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Dependencies & Build ldid
+      - name: Install Theos
         run: |
-          sudo apt-get update
-          sudo apt-get install -y clang make dpkg git curl unzip libssl-dev libplist-dev
-          
-          # ldid alətini mənbədən uğurla kompilyasiya edirik
-          git clone https://github.com/ProcursusTeam/ldid.git
-          cd ldid
-          make
-          sudo cp ldid /usr/local/bin/ldid
-          cd ..
-          rm -rf ldid
-          
-          if [ -d "/opt/theos" ]; then
-            sudo rm -rf /opt/theos
-          fi
-          sudo git clone --recursive https://github.com/theos/theos.git /opt/theos
-          
-          # SDK qovluğunu tənzimləyirik
-          sudo rm -rf /opt/theos/sdks
-          sudo git clone --depth=1 https://github.com/theos/sdks.git /opt/theos/sdks
-          
-          # Linux toolchain qovluğunu yaradıb sistem clang/clang++ fayllarını linkləyirik
-          sudo mkdir -p /opt/theos/toolchain/linux/iphone/bin
-          sudo ln -s /usr/bin/clang /opt/theos/toolchain/linux/iphone/bin/clang
-          sudo ln -s /usr/bin/clang++ /opt/theos/toolchain/linux/iphone/bin/clang++
-          
-          sudo chmod -R 777 /opt/theos
+          # HATA ÇÖZÜMÜ: Theos'u doğru (macOS) yola kuruyoruz
+          export THEOS=$HOME/theos
+          git clone --recursive https://github.com/theos/theos.git $THEOS
+          echo "THEOS=$THEOS" >> $GITHUB_ENV
+          echo "$THEOS/bin" >> $GITHUB_PATH
 
-      - name: Build Tweak
+      - name: Install ldid
         run: |
-          export THEOS=/opt/theos
-          export PATH="$THEOS/bin:$PATH"
-          make clean
-          make package
+          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_arm64
+          chmod +x ldid_macosx_arm64
+          mv ldid_macosx_arm64 $THEOS/bin/ldid
 
-      - name: Upload Dylib Artifact
+      - name: Build Tweak and Package
+        run: |
+          make clean || true
+          make all
+          make package FINALPACKAGE=1
+
+      # Dosyaları tek bir klasörde toplama
+      - name: Prepare Files for Upload
+        run: |
+          mkdir -p M7MD_Output
+          find .theos/obj -name "*.dylib" -exec cp {} M7MD_Output/ \;
+          find packages -name "*.deb" -exec cp {} M7MD_Output/ \;
+
+      # Klasörü tek bir artifact olarak yükleme
+      - name: Upload Output Folder
         uses: actions/upload-artifact@v4
         with:
-          name: com.m7md.tweak
-          path: packages/*.deb
+          name: M7MD_Files
+          path: M7MD_Output/
+          if-no-files-found: error
+
+      # Dosyaları packages klasörüne pushlama
+      - name: Move Files to Packages Folder
+        run: |
+          mkdir -p packages
+          find M7MD_Output -name "*.dylib" -exec cp {} packages/ \;
+          find M7MD_Output -name "*.deb" -exec cp {} packages/ \;
+
+      - name: Commit and Push Files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Otomatik derleme: Dylib ve Deb dosyaları packages klasörüne eklendi."
+          file_pattern: 'packages/*'
+          branch: main
