@@ -13,14 +13,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install Dependencies & Theos
+      - name: Install Dependencies & Build ldid
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang make dpkg git curl unzip
+          sudo apt-get install -y clang make dpkg git curl unzip libssl-dev
           
-          # ldid alətini birbaşa rəsmi ən son buraxılışdan yükləyirik
-          sudo wget -O /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/latest/download/ldid
-          sudo chmod +x /usr/local/bin/ldid
+          # ldid alətini birbaşa rəsmi mənbədən kompilyasiya edirik (404 xətası verməz)
+          git clone https://github.com/ProcursusTeam/ldid.git
+          cd ldid
+          make
+          sudo cp ldid /usr/local/bin/ldid
+          cd ..
+          rm -rf ldid
           
           if [ -d "/opt/theos" ]; then
             sudo rm -rf /opt/theos
