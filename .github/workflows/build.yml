@@ -1,4 +1,4 @@
-name: Build M7MD Dylib and Deb
+name: Build M7MD Dylib and De
 
 on:
   push:
